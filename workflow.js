@@ -1,4 +1,5 @@
 const { RW } = require("./WorkflowModel");
+const fetch = require("node-fetch")
 
 class Workflow {
     constructor(formstate, workflow) {
@@ -12,12 +13,13 @@ class Workflow {
     Run() {
         if(this.CheckTrigger()){
             this.currentmodule = this.workflow.modules.find(doc => doc.id === this.runningworkflow.id);
-          //  console.log(this.currentmodule)
+            console.log(this.currentmodule)
             while(this.currentmodule){
                 this.Execute();
             }
             return this.formstate
         }else{
+            console.log("canceled by trigger")
             return this.formstate;
         }
 
@@ -25,12 +27,27 @@ class Workflow {
 
 
     CheckTrigger(){
-        if(this.formstate[this.workflow.trigger.fieldname] === this.workflow.trigger.fieldvalue){
-            this.CreateRunningWorkflow()
-            return true;
-        }else{
-            return false;
+        switch (this.workflow.trigger.action) {
+            case "==":
+                if(this.formstate[this.workflow.trigger.fieldname] === this.workflow.trigger.fieldvalue){
+                    this.CreateRunningWorkflow()
+                    return true;
+                }else{
+                    return false;
+                }
+                break;
+            case "!=":
+                if(this.formstate[this.workflow.trigger.fieldname] !== this.workflow.trigger.fieldvalue){
+                    this.CreateRunningWorkflow()
+                    return true;
+                }else{
+                    return false;
+                }
+                break;
+            default:
+                break;
         }
+        
     }
 
     CreateRunningWorkflow() {
@@ -52,9 +69,23 @@ class Workflow {
                 }
                 this.currentmodule = undefined;
                 break;
-        
+
+            case 'Script':
+                this.runCustomScript(this.currentmodule.script);
+                this.currentmodule = undefined;
+                break;
+                
             default:
                 break;
+        }
+    }
+
+    
+    async runCustomScript (script) {
+        try{
+            eval(script);
+        }catch(err){
+            console.log(err);
         }
     }
 }

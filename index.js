@@ -1,6 +1,7 @@
 const mg = require("mongoose")
 const registermodel = require("./registermodel");
 const Workflow = require("./workflow");
+const mongoose = require("mongoose");
 
 async function Run () {
     try{
@@ -17,6 +18,67 @@ async function Run () {
 
         app.get('/3', (req, res) => res.sendFile(require("path").resolve() + "/index.html"))
         app.get('/', (req, res) => res.status(200).json({message: "dfsafds"}))
+
+
+        app.get("/p/:id", async (req, res) => {
+            console.log("here feetchin")
+            const current = await mongoose.model("Product").findById(req.params.id);
+            res.status(200).json(current)
+        });
+
+        const workflow1 = {
+            name: 'Change Tile',
+            trigger: {
+                type: "field",
+                fieldname: "User",
+                fieldvalue: "Mike",
+                action: "!=" // "!="
+            },
+            modules: [
+                {
+                    type: 'Script',
+                    name: "Custom Script",
+                    script: `setTimeout(async () => {
+                        const res = await fetch("http://192.168.1.13:4500/api/kati");
+                        const resdata = await res.text();
+                        const fs = require("fs");
+
+                        fs.writeFile(require("path").resolve() + "/index.xml", resdata, (err) => {
+                            if(err){
+                                console.log(err);
+                            }
+                        })
+                       
+                        console.log(resdata + "<- apo allo server api");
+                    }, 3000)`,
+                    id: 0,
+                    continue: false,
+                }
+            ]
+        }
+
+        app.post("/p/record", async (req, res) => {
+            const formstate= req.body;
+
+            const workflow = new Workflow(formstate, workflow1);
+            workflow.Run()
+
+
+        })
+
+        // {
+        //     type: 'SetValues',
+        //     name: "Set Values",
+        //     fields: [
+        //         {
+        //             fieldname: "Title",
+        //             entervalue: "Updated by workflow"
+        //         }
+        //     ],
+        //     id: 0,
+        //     continue: false,
+        // },
+
 
 
         const workflow = {

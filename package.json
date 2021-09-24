@@ -1,10 +1,10 @@
 {
-  "name": "worfklow",
+  "name": "test",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon --max-old-space-size=4076 index.js"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +12,9 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "mongoose": "^6.0.7"
+    "express-upload": "^0.1.0",
+    "mongoose": "^6.0.7",
+    "node-fetch": "^2.6.2",
+    "nodemon": "^2.0.13"
   }
 }
